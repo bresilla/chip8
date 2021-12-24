@@ -7,7 +7,7 @@ mod chip8;
 use chip8::Chip8;
 
 fn main() {
-    let mut file = File::open("other/games/INVADERS").unwrap();
+    let mut file = File::open("games/INVADERS").unwrap();
     let mut data = Vec::<u8>::new();
     file.read_to_end(&mut data);
     println!("{:?}", data);

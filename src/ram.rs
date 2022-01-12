@@ -1,3 +1,6 @@
+use std::fmt;
+
+#[derive(Debug)]
 pub struct Ram {
     mem: [u8; 4096]
 }
@@ -23,10 +26,31 @@ impl Ram {
             [0xF0, 0x80, 0xF0, 0x80, 0xF0], // E
             [0xF0, 0x80, 0xF0, 0x80, 0x80], // F
         ];
+
+        let mut i = 0;
+        for sprite in sprites.iter() {
+            for ch in sprite {
+                ram.mem[i] = *ch;
+                i = i+1;
+            }
+        }
+
+        for i in 0..0x1ff {
+            print!("{:#X} ", ram.mem[i])
+        }
+
         return ram
     }
     pub fn write_byte(&mut self, address: u16, value: u8) {
         self.mem[address as usize] = value;
     }
-    pub fn read_byte(&mut self, address: u16, value: u8) { }
+    pub fn read_byte(self, address: u16) -> u8 { 
+        return self.mem[address as usize]
+    }
+}
+
+impl fmt::Display for Ram {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", "RAM")
+    }
 }

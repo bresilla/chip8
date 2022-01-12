@@ -1,7 +1,7 @@
 use std::fmt;
 
 use crate::ram::Ram;
-use crate::cpu::Cpu;
+use crate::cpu::{Cpu, PROGRAM_START};
 
 pub struct Chip8 {
     ram: Ram,
@@ -16,11 +16,15 @@ impl Chip8 {
         }
     }
     pub fn load_rom(&mut self, data: &Vec<u8>){
-       let offset = 0x200;
         for i in 0..data.len() {
-            self.ram.write_byte((offset + i) as u16, data[i]);
+            self.ram.write_byte((PROGRAM_START + i as u16) as u16, data[i]);
         }
     }
+
+    pub fn run_instruction(&mut self) {
+        self.cpu.execute(&mut self.ram)
+    }
+
 }
 
 impl fmt::Display for Chip8 {

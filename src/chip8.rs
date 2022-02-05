@@ -1,18 +1,18 @@
-use std::fmt;
-
 use crate::ram::Ram;
 use crate::cpu::{Cpu, PROGRAM_START};
 
 pub struct Chip8 {
     ram: Ram,
-    cpu: Cpu
+    cpu: Cpu,
+    itr: usize,
 }
 
 impl Chip8 {
     pub fn new() -> Chip8 {
         Chip8 { 
             ram: Ram::new(), 
-            cpu: Cpu::new()
+            cpu: Cpu::new(),
+            itr: 0,
         }
     }
     pub fn load_rom(&mut self, data: &Vec<u8>){
@@ -22,13 +22,11 @@ impl Chip8 {
     }
 
     pub fn run_instruction(&mut self) {
-        self.cpu.execute(&mut self.ram)
+        self.itr += 1;
+        println!("----------- iteration {} -----------", self.itr);
+        println!("--> {:?}", self.cpu);
+        self.cpu.execute(&mut self.ram);
+        println!()
     }
 
-}
-
-impl fmt::Display for Chip8 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", "RAM")
-    }
 }

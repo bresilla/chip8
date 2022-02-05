@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 #![allow(unused_must_use)]
+#![allow(unreachable_code)]
+#![allow(unused_imports)]
 
 use std::fs::File;
 use std::io::Read;
@@ -17,5 +19,8 @@ fn main() {
     file.read_to_end(&mut data);
 
     let mut chip8 = Chip8::new();
-    chip8.load_rom(&data)
+    chip8.load_rom(&data);
+    loop{
+        chip8.run_instruction()
+    }
 }

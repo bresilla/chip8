@@ -1,6 +1,7 @@
 use colored::Colorize;
 use crate::ram::Ram;
 use std::fmt;
+use rand::prelude::*;
 
 pub const PROGRAM_START: u16 = 0x200;
 
@@ -46,12 +47,19 @@ impl Cpu {
             0x6 => {
                 self.write_reg(x, nn);
                 self.increment_pc();
-                println!("{} --> set VX: {} to NN: {}", " CONST ".black().on_truecolor(0, 136, 255), x, nn)
+                println!("{} --> set VX: {} to NN: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, nn)
             }
             0xA => {
                 self.i = nnn;
                 self.increment_pc();
-                println!("{} --> set i: {} to NNN: {}", " MEM ".black().on_truecolor(169, 105, 231), x, nn)
+                println!("{} --> set i: {} to NNN: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, nn)
+            }
+            0xC => {
+                let mut rng = thread_rng();
+                let r = rng.gen_range(0..254);
+                self.write_reg(x, r & nn);
+                self.increment_pc();
+                println!("{} --> set VX: {} to (RANDOM & NN): {:#X}", " RAND ".black().on_truecolor(198, 150, 69), x, (r&nn))
             }
             _ => {
                 println!("{} --> unrecognized instruction: {:#X}", " ERROR ".black().on_truecolor(212, 60, 58), instruction);

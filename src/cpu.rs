@@ -41,13 +41,23 @@ impl Cpu {
         match (instruction & 0xF000) >> 12 {
             0x1 => {
                 self.pc = nnn;
-                println!("{} jump to: {}", " JP ".black().on_truecolor(0, 255, 136), nnn)
+                println!("{} --> jump to: {:#X}", " FLOW ".black().on_truecolor(0, 255, 136), nnn)
             }
             0x6 => {
                 self.write_reg(x, nn);
                 self.increment_pc();
+                println!("{} --> set VX: {} to NN: {}", " CONST ".black().on_truecolor(0, 136, 255), x, nn)
             }
-            _ => panic!("unrecognized instruction: {}", format!("{:#X}", instruction).truecolor(0, 255, 136))
+            0xA => {
+                self.i = nnn;
+                self.increment_pc();
+                println!("{} --> set i: {} to NNN: {}", " MEM ".black().on_truecolor(169, 105, 231), x, nn)
+            }
+            _ => {
+                println!("{} --> unrecognized instruction: {:#X}", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                unreachable!()
+            }
+
         }
     }
     pub fn increment_pc(&mut self) { self.pc += 2 }

@@ -1,5 +1,6 @@
 use crate::ram::Ram;
 use crate::cpu::{Cpu, PROGRAM_START};
+use log::info;
 
 pub struct Chip8 {
     ram: Ram,
@@ -23,10 +24,9 @@ impl Chip8 {
 
     pub fn run_instruction(&mut self) {
         self.itr += 1;
-        println!("----------- iteration {} -----------", self.itr);
-        println!("--> {:?}", self.cpu);
+        info!("\n----------- iteration {} -----------", self.itr);
+        info!("--> {:?}", self.cpu);
         self.cpu.execute(&mut self.ram);
-        println!()
     }
 
 }

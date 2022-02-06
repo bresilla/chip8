@@ -6,6 +6,7 @@
 
 use std::fs::File;
 use std::io::Read;
+use log;
 
 mod ram;
 mod cpu;
@@ -14,6 +15,7 @@ mod chip8;
 use chip8::Chip8;
 
 fn main() {
+    env_logger::init();
     let mut file = File::open("games/INVADERS").unwrap();
     let mut data = Vec::<u8>::new();
     file.read_to_end(&mut data);

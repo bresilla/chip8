@@ -11,6 +11,9 @@ use log;
 mod ram;
 mod cpu;
 mod chip8;
+mod keyboard;
+mod display;
+mod bus;
 
 use chip8::Chip8;
 

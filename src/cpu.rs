@@ -8,18 +8,20 @@ pub const PROGRAM_START: u16 = 0x200;
 
 pub struct Cpu {
     v: [u8; 16],
-    pc: u16,
     i: u16,
-    prev: u16
+    pc: u16,
+    lc: u16,
+    stack: Vec<u16>,
 }
 
 impl Cpu {
     pub fn new() -> Cpu {
         Cpu{
             v: [0; 16],
-            pc: PROGRAM_START,
             i: 0,
-            prev: 0
+            pc: PROGRAM_START,
+            lc: 0,
+            stack: vec!()
         }
     }
 
@@ -36,43 +38,64 @@ impl Cpu {
         let y = ((instruction & 0x00F0) >> 4) as u8;
 
         info!("--> Values: nnn={:#X}, nn={:#X}, n={:?}, x={:#X}, y={:#X}", nnn, nn, n, x, y);
-        if self.pc == self.prev { panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) }
-        self.prev = self.pc;
+        if self.pc == self.lc { panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) }
+        self.lc = self.pc;
 
         match (instruction & 0xF000) >> 12 {
             0x1 => {
+                //goto NNN
                 self.pc = nnn;
-                info!("{} --> jump to NNN which is: {:#X}", " FLOW ".black().on_truecolor(0, 255, 136), nnn)
+                info!("{} --> jump to NNN which is: {:#X}", " FLOW ".black().on_truecolor(0, 255, 136), nnn);
+            }
+            0x2 => {
+                //*(0xNNN)()
+                self.stack.push(self.pc + 2);
+                self.pc = nnn;
+                info!("{} --> call subrutine at NNN which is: {:#X}", " FLOW ".black().on_truecolor(0, 255, 136), nnn);
             }
             0x3 => {
                 //if (Vx == NN)
-                if self.read_reg(x) == nn {
-                    self.increment_pc(2)
-                }
-                self.increment_pc(2)
+                if self.read_reg(x) == nn { self.increment_pc(2) }
+                self.increment_pc(2);
+                info!("{} --> if VX: {:#X} equals NN: {:#X}, then skip next instruction", " COND ".black().on_truecolor(104, 115, 233), self.read_reg(x), nn);
             }
             0x6 => {
                 //Vx = N
+                info!("{} --> set VX: {} to NN: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, nn);
                 self.write_reg(x, nn);
                 self.increment_pc(2);
-                info!("{} --> set VX: {} to NN: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, nn)
             }
             0x7 => {
                 //Vx += N
                 let r = self.read_reg(x);
                 self.write_reg(x, r.wrapping_add(nn));
                 self.increment_pc(2);
-                info!("{} --> set VX: {} to VX+N: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, r)
+                info!("{} --> set VX: {} to VX+N: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, r);
+            }
+            0x8 => {
+                match instruction & 0x000F {
+                    0x0 => {
+                        //Vx = Vy
+                        let vy = self.read_reg(y);
+                        self.write_reg(x, vy);
+                        self.increment_pc(2);
+                        info!("{} --> set vx:{:#X} = vy:{:#X}", " ASSIGN ".black().on_truecolor(225, 147, 236), x, vy);
+                    }
+                    _ => {
+                        info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        unreachable!()
+                    }
+                }
             }
             0xA => {
                 self.i = nnn;
                 self.increment_pc(2);
-                info!("{} --> set i: {} to NNN: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, nn)
+                info!("{} --> set i: {} to NNN: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, nn);
             }
             0xB => {
                 //PC = V0 + NNN 
                 self.pc = self.read_reg(0) as u16 + nnn;
-                info!("{} --> jump to V0 + NNN which is: {:#X}", " FLOW ".black().on_truecolor(0, 255, 136), self.pc)
+                info!("{} --> jump to V0 + NNN which is: {:#X}", " FLOW ".black().on_truecolor(0, 255, 136), self.pc);
             }
             0xC => {
                 //Vx = rand() & NN
@@ -80,7 +103,7 @@ impl Cpu {
                 let r = rng.gen_range(0..254);
                 self.write_reg(x, r & nn);
                 self.increment_pc(2);
-                info!("{} --> set VX: {} to (RANDOM & NN): {:#X}", " RAND ".black().on_truecolor(198, 150, 69), x, (r&nn))
+                info!("{} --> set VX: {} to (RANDOM & NN): {:#X}", " RAND ".black().on_truecolor(198, 150, 69), x, (r&nn));
             }
             0xD => {
                 //draw(Vx, Vy, N)
@@ -88,6 +111,20 @@ impl Cpu {
                 self.debug_draw_sprite(ram, x, y, n);
                 self.increment_pc(2);
             }
+            0xE => {
+                match instruction & 0x00FF {
+                    0xA1 => {
+                        //if (key() != Vx) skip next
+                        info!("{} --> {}", " KEYOP ".black().on_truecolor(169, 105, 231), x);
+                        self.increment_pc(2);
+                    }
+                    _ => {
+                        info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        unreachable!()
+                    }
+                }
+            }
+
             0xF => {
                 match instruction & 0x00FF {
                     0x1E => {

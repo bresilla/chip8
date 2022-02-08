@@ -17,8 +17,8 @@ impl Bus {
         }
     }
 
-    pub fn key_is_pressed(&self) -> bool {
-        self.keyboard.is_pressed()
+    pub fn key_is_pressed(&self, keycode: u8) -> bool {
+        self.keyboard.is_pressed(keycode)
     }
     pub fn ram_write_byte(&mut self, address: u16, value: u8) {
         self.ram.write_byte(address, value);
@@ -26,7 +26,7 @@ impl Bus {
     pub fn ram_read_byte(&self, address: u16) -> u8 { 
         return self.ram.read_byte(address)
     }
-    pub fn disp_debug_draw_byte(&self, i: u16, x: u8, y: u8, height: u8) {
-        self.display.debug_draw_byte(&self, i, x, y, height);
+    pub fn disp_draw_byte(&mut self, byte: u8, x: u8, y: u8) {
+        self.display.draw_byte(byte, x, y)
     }
 }

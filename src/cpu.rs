@@ -108,15 +108,18 @@ impl Cpu {
             0xD => {
                 //draw(Vx, Vy, N)
                 info!("{} --> draw at (VX × VY): ({} × {})", " DISPLAY ".black().on_truecolor(100, 200, 200), self.read_reg(x), self.read_reg(y));
-                // self.debug_draw_sprite(bus, x, y, n);
-                bus.disp_debug_draw_byte(self.i, x, y, n);
+                self.debug_draw_sprite(bus, x, y, n);
                 self.increment_pc(2);
             }
             0xE => {
                 match instruction & 0x00FF {
                     0xA1 => {
                         //if (key() != Vx) skip next
-                        info!("{} --> {}", " KEYOP ".black().on_truecolor(169, 105, 231), x);
+                        let key = self.read_reg(x);
+                        if !bus.key_is_pressed(key) {
+                            info!("{} --> key {} is not pressed", " KEYOP ".black().on_truecolor(169, 105, 231), x);
+                            self.increment_pc(2);
+                        }
                         self.increment_pc(2);
                     }
                     _ => {
@@ -149,6 +152,13 @@ impl Cpu {
     pub fn increment_pc(&mut self, jumps: u16) { self.pc += jumps }
     pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
     pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
+    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, height: u8) {
+        for r in 0 .. height {
+            let b = bus.ram_read_byte(self.i + r as u16);
+            bus.disp_draw_byte(b, x, y)
+        }
+        print!("\n");
+    }
 }
 
 impl fmt::Debug for Cpu {

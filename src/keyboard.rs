@@ -7,7 +7,7 @@ impl Keyboard {
         Keyboard {  }
     }
 
-    pub fn is_pressed(&self) -> bool {
+    pub fn is_pressed(&self, keycode: u8) -> bool {
         true
     }
 }

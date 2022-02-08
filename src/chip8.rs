@@ -1,9 +1,9 @@
-use crate::ram::Ram;
+use crate::bus::Bus;
 use crate::cpu::{Cpu, PROGRAM_START};
 use log::info;
 
 pub struct Chip8 {
-    ram: Ram,
+    bus: Bus,
     cpu: Cpu,
     itr: usize,
 }
@@ -11,14 +11,14 @@ pub struct Chip8 {
 impl Chip8 {
     pub fn new() -> Chip8 {
         Chip8 { 
-            ram: Ram::new(), 
+            bus: Bus::new(), 
             cpu: Cpu::new(),
             itr: 0,
         }
     }
     pub fn load_rom(&mut self, data: &Vec<u8>){
         for i in 0..data.len() {
-            self.ram.write_byte((PROGRAM_START + i as u16) as u16, data[i]);
+            self.bus.ram_write_byte((PROGRAM_START + i as u16) as u16, data[i]);
         }
     }
 
@@ -26,7 +26,7 @@ impl Chip8 {
         self.itr += 1;
         info!("\n----------- iteration {} -----------", self.itr);
         info!("--> {:?}", self.cpu);
-        self.cpu.execute(&mut self.ram);
+        self.cpu.execute(&mut self.bus);
     }
 
 }

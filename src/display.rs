@@ -1,6 +1,6 @@
-pub struct Display {
+use crate::bus::Bus;
 
-}
+pub struct Display { }
 
 impl Display {
     pub fn new() -> Self {
@@ -16,6 +16,14 @@ impl Display {
                 _ => unreachable!(),
             }
             b = b << 1;
+        }
+        print!("\n");
+    }
+    
+    pub fn debug_draw_byte(&self, bus: &Bus, i: u16, x: u8, y: u8, height: u8) {
+        for r in 0 .. height {
+            let b = bus.ram_read_byte(i + r as u16);
+            bus.disp_draw_byte(b)
         }
         print!("\n");
     }

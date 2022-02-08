@@ -26,9 +26,6 @@ impl Bus {
     pub fn ram_read_byte(&self, address: u16) -> u8 { 
         return self.ram.read_byte(address)
     }
-    pub fn disp_draw_byte(&self, byte: u8) {
-        self.display.draw_byte(byte)
-    }
     pub fn disp_debug_draw_byte(&self, i: u16, x: u8, y: u8, height: u8) {
         self.display.debug_draw_byte(&self, i, x, y, height);
     }

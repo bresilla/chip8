@@ -146,16 +146,18 @@ impl Cpu {
                 info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                 unreachable!()
             }
-
         }
     }
+
     pub fn increment_pc(&mut self, jumps: u16) { self.pc += jumps }
     pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
     pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
+
     pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, height: u8) {
         for r in 0 .. height {
             let b = bus.ram_read_byte(self.i + r as u16);
-            bus.disp_draw_byte(b, x, y)
+            bus.disp_draw_byte(b, x, y);
+            self.write_reg(0xF, bus.flipped())
         }
         print!("\n");
     }

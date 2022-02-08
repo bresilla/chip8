@@ -17,6 +17,8 @@ impl Bus {
         }
     }
 
+    pub fn flipped(&self) -> u8 { self.display.flipped() }
+
     pub fn key_is_pressed(&self, keycode: u8) -> bool {
         self.keyboard.is_pressed(keycode)
     }
@@ -26,7 +28,7 @@ impl Bus {
     pub fn ram_read_byte(&self, address: u16) -> u8 { 
         return self.ram.read_byte(address)
     }
-    pub fn disp_draw_byte(&mut self, byte: u8, x: u8, y: u8) {
+    pub fn disp_draw_byte(&mut self, byte: u8, x: u8, y: u8) -> bool {
         self.display.draw_byte(byte, x, y)
     }
 }

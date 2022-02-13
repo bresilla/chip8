@@ -77,6 +77,18 @@ impl Cpu {
                 self.increment_pc(2);
                 info!("{} --> if VX: {:#X} equals NN: {:#X}, then skip next instruction", " COND ".black().on_truecolor(104, 115, 233), self.read_reg(x), nn);
             }
+            0x4 => {
+                //if (Vx != NN)
+                if self.read_reg(x) != nn { self.increment_pc(2) }
+                self.increment_pc(2);
+                info!("{} --> if VX: {:#X} does not equals NN: {:#X}, then skip next instruction", " COND ".black().on_truecolor(104, 115, 233), self.read_reg(x), nn);
+            }
+            0x5 => {
+                //if (Vx == Vy)
+                if self.read_reg(x) == self.read_reg(y) { self.increment_pc(2) }
+                self.increment_pc(2);
+                info!("{} --> if VX: {:#X} equals Vy: {:#X}, then skip next instruction", " COND ".black().on_truecolor(104, 115, 233), self.read_reg(x), self.read_reg(y));
+            }
             0x6 => {
                 //Vx = N
                 info!("{} --> set VX: {} to NN: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, nn);
@@ -91,19 +103,76 @@ impl Cpu {
                 info!("{} --> set VX: {} to VX+N: {:#X}", " CONST ".black().on_truecolor(0, 136, 255), x, r);
             }
             0x8 => {
+                let vy = self.read_reg(y);
+                let vx = self.read_reg(x);
                 match instruction & 0x000F {
                     0x0 => {
                         //Vx = Vy
-                        let vy = self.read_reg(y);
                         self.write_reg(x, vy);
-                        self.increment_pc(2);
                         info!("{} --> set vx:{:#X} = vy:{:#X}", " ASSIGN ".black().on_truecolor(225, 147, 236), x, vy);
+                    }
+                    0x1 => {
+                        //Vx |= Vy
+                        self.write_reg(x, vx | vy);
+                        info!("{} --> set vx:{:#X} |= vy:{:#X}", " BITOP ".black().on_truecolor(201, 240, 236), vx, vy);
+                    }
+                    0x2 => {
+                        //Vx &= Vy
+                        self.write_reg(x, vx & vy);
+                        info!("{} --> set vx:{:#X} &= vy:{:#X}", " BITOP ".black().on_truecolor(201, 240, 236), vx, vy);
+                    }
+                    0x3 => {
+                        //Vx ^= Vy
+                        self.write_reg(x, vx ^ vy);
+                        info!("{} --> set vx:{:#X} ^= vy:{:#X}", " BITOP ".black().on_truecolor(201, 240, 236), vx, vy);
+                    }
+                    0x4 => {
+                        //Vx += Vy
+                        let a: u16 = vx as u16 + vy as u16;
+                        self.write_reg(x, a as u8);
+                        if a > 0xFF { self.write_reg(0xF, 1) }
+                        info!("{} --> set vx:{:#X} += vy:{:#X}", " MATH ".black().on_truecolor(215, 215, 140), vx, vy);
+                    }
+                    0x5 => {
+                        //Vx -= Vy
+                        let a: i8 = vx as i8 - vy as i8;
+                        self.write_reg(x, a as u8);
+                        if a < 0 { self.write_reg(0xF, 1) }
+                        info!("{} --> set vx:{:#X} -= vy:{:#X}", " MATH ".black().on_truecolor(215, 215, 140), vx, vy);
+                    }
+                    0x6 => {
+                        //Vx >>= 1
+                        self.write_reg(0xF, vy & 0x1);
+                        self.write_reg(y, vy >> 1);
+                        self.write_reg(x, vy >> 1);
+                        info!("{} --> set vx:{:#X} >>= vy:{:#X}", " BITOP ".black().on_truecolor(201, 240, 236), vx, vy);
+                    }
+                    0x7 => {
+                        //Vx = Vy - Vx
+                        let a: i8 = vy as i8 - vx as i8;
+                        self.write_reg(x, a as u8);
+                        if a < 0 { self.write_reg(0xF, 1) }
+                        info!("{} --> set vx:{:#X} -= vy:{:#X}", " MATH ".black().on_truecolor(215, 215, 140), vx, vy);
+                    }
+                    0x8 => {
+                        //Vx <<= 1
+                        self.write_reg(0xF, vx & 0x1);
+                        self.write_reg(x, vy << 1);
+                        self.write_reg(y, vy << 1);
+                        info!("{} --> set vx:{:#X} <<= vy:{:#X}", " BITOP ".black().on_truecolor(201, 240, 236), vx, vy);
                     }
                     _ => {
                         info!("{} --> 0x8: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                         unreachable!()
                     }
                 }
+                self.increment_pc(2);
+            }
+            0x9 => {
+                //if (Vx != Vy)
+                if self.read_reg(x) != self.read_reg(y) { self.increment_pc(2) }
+                self.increment_pc(2);
+                info!("{} --> if VX: {:#X} equals Vy: {:#X}, then skip next instruction", " COND ".black().on_truecolor(104, 115, 233), self.read_reg(x), self.read_reg(y));
             }
             0xA => {
                 self.i = nnn;
@@ -140,6 +209,15 @@ impl Cpu {
                         }
                         self.increment_pc(2);
                     }
+                    0x9E => {
+                        //if (key() == Vx) skip next
+                        let key = self.read_reg(x);
+                        if bus.key_is_pressed(key) {
+                            info!("{} --> key {} is not pressed", " KEYOP ".black().on_truecolor(169, 105, 231), x);
+                            self.increment_pc(2);
+                        }
+                        self.increment_pc(2);
+                    }
                     _ => {
                         info!("{} --> 0xE: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                         unreachable!()
@@ -147,18 +225,10 @@ impl Cpu {
                 }
             }
             0xF => {
-                match instruction & 0x00FF {
-                    0x1E => {
-                        let new_i = self.read_reg(x) as u16;
-                        self.i = new_i;
-                        info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
-                        self.increment_pc(2);
-                    }
-                    _ => {
-                        info!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
-                        unreachable!()
-                    }
-                }
+                let new_i = self.read_reg(x) as u16;
+                self.i = new_i;
+                info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
+                self.increment_pc(2);
             }
             _ => {
                 info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);

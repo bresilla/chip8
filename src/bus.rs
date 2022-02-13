@@ -31,4 +31,10 @@ impl Bus {
     pub fn disp_draw_byte(&mut self, byte: u8, x: u8, y: u8) -> bool {
         self.display.draw_byte(byte, x, y)
     }
+    pub fn disp_show_pixels(&mut self) {
+        self.display.show_pixels()
+    }
+    pub fn disp_clean_screen(&mut self) {
+        self.display.clear_diplay()
+    }
 }

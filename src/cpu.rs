@@ -21,7 +21,7 @@ impl Cpu {
             i: 0,
             pc: PROGRAM_START,
             lc: 0,
-            stack: vec!()
+            stack: Vec::<u16>::new(),
         }
     }
 
@@ -42,6 +42,24 @@ impl Cpu {
         self.lc = self.pc;
 
         match (instruction & 0xF000) >> 12 {
+            0x0 => {
+                match instruction & 0x00FF {
+                    0xE0 => {
+                        bus.disp_clean_screen();
+                        self.increment_pc(2);
+                        info!("{} --> clean display", " DISPLAY ".black().on_truecolor(100, 200, 200));
+                    }
+                    0xEE => {
+                        let pc = self.stack.pop().unwrap();
+                        self.pc = pc;
+                        info!("{} --> return from subrutine", " FLOW ".black().on_truecolor(0, 255, 136));
+                    }
+                    _ => {
+                        info!("{} --> 0x0: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        unreachable!()
+                    }
+                }
+            }
             0x1 => {
                 //goto NNN
                 self.pc = nnn;
@@ -82,7 +100,7 @@ impl Cpu {
                         info!("{} --> set vx:{:#X} = vy:{:#X}", " ASSIGN ".black().on_truecolor(225, 147, 236), x, vy);
                     }
                     _ => {
-                        info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        info!("{} --> 0x8: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                         unreachable!()
                     }
                 }
@@ -123,7 +141,7 @@ impl Cpu {
                         self.increment_pc(2);
                     }
                     _ => {
-                        info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        info!("{} --> 0xE: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                         unreachable!()
                     }
                 }
@@ -137,7 +155,7 @@ impl Cpu {
                         self.increment_pc(2);
                     }
                     _ => {
-                        info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        info!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                         unreachable!()
                     }
                 }
@@ -153,13 +171,13 @@ impl Cpu {
     pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
     pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
 
-    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, height: u8) {
-        for r in 0 .. height {
-            let b = bus.ram_read_byte(self.i + r as u16);
+    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, n: u8) {
+        for y in 0 .. n {
+            let b = bus.ram_read_byte(self.i + y as u16);
             bus.disp_draw_byte(b, x, y);
-            self.write_reg(0xF, bus.flipped())
         }
-        print!("\n");
+        bus.disp_show_pixels();
+        self.write_reg(0xF, bus.flipped());
     }
 }
 

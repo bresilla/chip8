@@ -22,7 +22,7 @@ impl Display {
     }
 
     pub fn draw_byte(&mut self, byte: u8, x: u8, y: u8) -> bool {
-        self.flipped = false;
+        let mut flipped = false;
         let mut cx = x as usize;
         let cy = y as usize;
         let mut b = byte;
@@ -30,7 +30,7 @@ impl Display {
             match (b & 0b1000_0000) >> 7 {
                 0 => {
                     if self.screen[cy][cx] == 1 {
-                        self.flipped = true
+                        flipped = true
                     }
                     self.screen[cy][cx] = 0 
                 },
@@ -42,7 +42,7 @@ impl Display {
             cx += 1;
             b = b << 1;
         }
-        self.flipped
+        flipped
     }
 
     pub fn show_pixels(&self) {
@@ -59,11 +59,6 @@ impl Display {
     }
 
     pub fn clear_diplay(&mut self) {
-        for y in 0..HEIGHT {
-            for x in 0..WIDTH {
-                self.screen[y][x] = 0;
-            }
-        }
-        self.show_pixels();
+        self.screen = [[0; WIDTH]; HEIGHT];
     }
 }

@@ -14,6 +14,7 @@ mod chip8;
 mod keyboard;
 mod display;
 mod bus;
+mod timer;
 
 use chip8::Chip8;
 

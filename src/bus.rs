@@ -1,11 +1,13 @@
 use crate::ram::Ram;
 use crate::keyboard::Keyboard;
 use crate::display::Display;
+use crate::timer::Timer;
 
 pub struct Bus {
     ram: Ram,
     keyboard: Keyboard,
     display: Display,
+    timer: Timer
 }
 
 impl Bus {
@@ -13,7 +15,8 @@ impl Bus {
         Bus {
             ram: Ram::new(), 
             keyboard: Keyboard::new(),
-            display: Display::new() 
+            display: Display::new(),
+            timer: Timer::new(),
         }
     }
 
@@ -36,5 +39,21 @@ impl Bus {
     }
     pub fn disp_clean_screen(&mut self) {
         self.display.clear_diplay()
+    }
+
+    pub fn timer_set_delay(&mut self, value: u8) {
+        self.timer.set_delay(value)
+    }
+
+    pub fn timer_get_delay(&self) -> u8 {
+        self.timer.get_delay()
+    }
+
+    pub fn timer_get_clock(&self) -> u8 {
+        self.timer.get_clock()
+    }
+
+    pub fn timer_tick(&mut self) {
+        self.timer.tick()
     }
 }

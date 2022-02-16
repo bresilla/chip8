@@ -21,7 +21,7 @@ impl Display {
         self.flipped as u8 
     }
 
-    fn index_from_coords(x: usize, y: usize) -> usize {
+    pub fn index_from_coords(x: usize, y: usize) -> usize {
         y * WIDTH + x
     }
 
@@ -67,6 +67,6 @@ impl Display {
     }
 
     pub fn get_buffer(&self) -> &[u8] {
-        todo!()
+        &self.screen
     }
 }

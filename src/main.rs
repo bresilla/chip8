@@ -6,7 +6,9 @@
 
 use std::fs::File;
 use std::io::Read;
+
 use log;
+use minifb::{Key, Window, WindowOptions};
 
 mod ram;
 mod cpu;
@@ -17,6 +19,7 @@ mod bus;
 mod timer;
 
 use chip8::Chip8;
+use display::{WIDTH, HEIGHT};
 
 fn main() {
     env_logger::init();

@@ -31,7 +31,7 @@ impl Bus {
     pub fn ram_read_byte(&self, address: u16) -> u8 { 
         return self.ram.read_byte(address)
     }
-    pub fn disp_draw_byte(&mut self, byte: u8, x: u8, y: u8) -> bool {
+    pub fn disp_draw_byte(&mut self, byte: u8, x: u8, y: u8) {
         self.display.draw_byte(byte, x, y)
     }
     pub fn disp_show_pixels(&mut self) {

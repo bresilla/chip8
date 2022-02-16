@@ -269,7 +269,6 @@ impl Cpu {
             let b = bus.ram_read_byte(self.i + y as u16);
             bus.disp_draw_byte(b, x, y);
         }
-        bus.disp_show_pixels();
         self.write_reg(0xF, bus.disp_flipped_bit());
     }
 }

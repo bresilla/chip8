@@ -1,8 +1,8 @@
 use colored::Colorize;
 use crate::bus::Bus;
 
-const WIDTH: usize = 64;
-const HEIGHT: usize = 32;
+pub const WIDTH: usize = 64;
+pub const HEIGHT: usize = 32;
 
 pub struct Display {
     screen: [[u8; WIDTH]; HEIGHT],
@@ -21,8 +21,8 @@ impl Display {
         self.flipped as u8 
     }
 
-    pub fn draw_byte(&mut self, byte: u8, x: u8, y: u8) -> bool {
-        let mut flipped = false;
+    pub fn draw_byte(&mut self, byte: u8, x: u8, y: u8) {
+        self.flipped = false;
         let mut cx = x as usize;
         let cy = y as usize;
         let mut b = byte;
@@ -30,7 +30,7 @@ impl Display {
             match (b & 0b1000_0000) >> 7 {
                 0 => {
                     if self.screen[cy][cx] == 1 {
-                        flipped = true
+                        self.flipped = true
                     }
                     self.screen[cy][cx] = 0 
                 },
@@ -42,7 +42,6 @@ impl Display {
             cx += 1;
             b = b << 1;
         }
-        flipped
     }
 
     pub fn show_pixels(&self) {

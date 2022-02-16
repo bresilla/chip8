@@ -3,6 +3,8 @@ use crate::keyboard::Keyboard;
 use crate::display::Display;
 use crate::timer::Timer;
 
+use std::fmt;
+
 pub struct Bus {
     ram: Ram,
     keyboard: Keyboard,
@@ -19,8 +21,6 @@ impl Bus {
             timer: Timer::new(),
         }
     }
-
-    pub fn flipped(&self) -> u8 { self.display.flipped() }
 
     pub fn key_is_pressed(&self, keycode: u8) -> bool {
         self.keyboard.is_pressed(keycode)
@@ -41,6 +41,10 @@ impl Bus {
         self.display.clear_diplay()
     }
 
+    pub fn disp_flipped_bit(&self) -> u8 { 
+        self.display.flipped_bit()
+    }
+
     pub fn timer_set_delay(&mut self, value: u8) {
         self.timer.set_delay(value)
     }
@@ -49,11 +53,17 @@ impl Bus {
         self.timer.get_delay()
     }
 
-    pub fn timer_get_clock(&self) -> u8 {
+    pub fn timer_get_clock(&self) -> usize {
         self.timer.get_clock()
     }
 
     pub fn timer_tick(&mut self) {
         self.timer.tick()
+    }
+}
+
+impl fmt::Debug for Bus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "Clock: {}, \t Delay: {}", self.timer_get_clock(), self.timer_get_delay())
     }
 }

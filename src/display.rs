@@ -16,7 +16,9 @@ impl Display {
         }
     }
 
-    pub fn flipped(&self) -> u8 { self.flipped as u8 }
+    pub fn flipped_bit(&self) -> u8 {
+        self.flipped as u8 
+    }
 
     pub fn draw_byte(&mut self, byte: u8, x: u8, y: u8) -> bool {
         self.flipped = false;

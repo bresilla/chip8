@@ -19,8 +19,8 @@ impl Timer {
         self.delay
     }
 
-    pub fn get_clock(&self) -> u8 {
-        self.delay
+    pub fn get_clock(&self) -> usize {
+        self.clock
     }
 
     pub fn tick(&mut self) {

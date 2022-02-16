@@ -5,7 +5,6 @@ use log::info;
 pub struct Chip8 {
     bus: Bus,
     cpu: Cpu,
-    itr: usize,
 }
 
 impl Chip8 {
@@ -13,7 +12,6 @@ impl Chip8 {
         Chip8 { 
             bus: Bus::new(), 
             cpu: Cpu::new(),
-            itr: 0,
         }
     }
     pub fn load_rom(&mut self, data: &Vec<u8>){
@@ -23,8 +21,8 @@ impl Chip8 {
     }
 
     pub fn run_instruction(&mut self) {
-        self.itr += 1;
-        info!("\n----------- iteration {} -----------", self.itr);
+        self.bus.timer_tick();
+        info!("\n----------- iteration {} -----------", self.bus.timer_get_clock());
         info!("--> {:?}", self.cpu);
         self.cpu.execute(&mut self.bus);
     }

@@ -26,7 +26,5 @@ fn main() {
 
     let mut chip8 = Chip8::new();
     chip8.load_rom(&data);
-    loop{
-        chip8.run_instruction()
-    }
+    loop{ chip8.run_instruction() }
 }

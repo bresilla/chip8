@@ -255,7 +255,7 @@ impl Cpu {
             bus.disp_draw_byte(b, x, y);
         }
         bus.disp_show_pixels();
-        self.write_reg(0xF, bus.flipped());
+        self.write_reg(0xF, bus.disp_flipped_bit());
     }
 }
 

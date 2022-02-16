@@ -53,7 +53,7 @@ impl Bus {
         self.timer.get_delay()
     }
 
-    pub fn timer_get_clock(&self) -> usize {
+    pub fn timer_get_clock(&self) -> u64 {
         self.timer.get_clock()
     }
 
@@ -64,6 +64,6 @@ impl Bus {
 
 impl fmt::Debug for Bus {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Clock: {}, \t Delay: {}", self.timer_get_clock(), self.timer_get_delay())
+        write!(f, "{:?}", self.timer)
     }
 }

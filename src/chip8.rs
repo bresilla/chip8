@@ -22,9 +22,10 @@ impl Chip8 {
 
     pub fn run_instruction(&mut self) {
         self.bus.timer_tick();
-        info!("\n----------- iteration {} -----------", self.bus.timer_get_clock());
-        info!("--> {:?}", self.cpu);
+        info!("{:?}", self.bus);
+        info!("{:?}", self.cpu);
         self.cpu.execute(&mut self.bus);
+        info!("\n");
     }
 
 }

@@ -198,8 +198,10 @@ impl Cpu {
             }
             0xD => {
                 //draw(Vx, Vy, N)
-                info!("{} --> draw at (VX × VY): ({} × {})", " DISPLAY ".black().on_truecolor(100, 200, 200), self.read_reg(x), self.read_reg(y));
-                self.debug_draw_sprite(bus, x, y, n);
+                let vx = self.read_reg(x);
+                let vy = self.read_reg(y);
+                info!("{} --> draw at (VX × VY): ({} × {})", " DISPLAY ".black().on_truecolor(100, 200, 200), vx, vy);
+                self.debug_draw_sprite(bus, vx, vy, n);
                 self.increment_pc(2);
             }
             0xE => {

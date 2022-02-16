@@ -1,7 +1,8 @@
+use colored::Colorize;
 use crate::bus::Bus;
 
 const WIDTH: usize = 64;
-const HEIGHT: usize = 64;
+const HEIGHT: usize = 32;
 
 pub struct Display {
     screen: [[u8; WIDTH]; HEIGHT],
@@ -50,7 +51,7 @@ impl Display {
                 if self.screen[y][x] == 0 {
                     print!("░");
                 } else {
-                    print!("█");
+                    print!("{}", "█".red());
                 }
             }
             print!("\n");

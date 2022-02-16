@@ -226,11 +226,28 @@ impl Cpu {
             }
             0xF => {
                 match instruction & 0x00FF {
+                    0x07 => {
+                        self.write_reg(x, bus.timer_get_delay());
+                        info!("{} --> set VX to timer delay: {}", " TIMER ".black().on_truecolor(244, 216, 198), bus.timer_get_delay());
+                        self.increment_pc(2);
+                    }
+                    0x15 => {
+                        bus.timer_set_delay(self.read_reg(x));
+                        info!("{} --> set delay timer to VX: {}", " TIMER ".black().on_truecolor(244, 216, 198), self.read_reg(x));
+                        self.increment_pc(2);
+                    }
                     0x1E => {
                         let new_i = self.read_reg(x) as u16;
                         self.i = new_i;
                         info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
                         self.increment_pc(2);
+                    }
+                    0x65 => {
+                        //reg_load(Vx, &I)
+                        for index in 0 .. x + 1 {
+                            let value = bus.ram_read_byte(self.i + index as u16);
+                            self.write_reg(index, value);
+                        }
                     }
                     _ => {
                         info!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);

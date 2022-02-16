@@ -5,14 +5,14 @@ pub const WIDTH: usize = 64;
 pub const HEIGHT: usize = 32;
 
 pub struct Display {
-    screen: [[u8; WIDTH]; HEIGHT],
+    screen: [u8; WIDTH * HEIGHT],
     flipped: bool
 }
 
 impl Display {
     pub fn new() -> Self {
         Display {
-            screen: [[0; WIDTH]; HEIGHT],
+            screen: [0; WIDTH * HEIGHT],
             flipped: false
         }
     }
@@ -21,21 +21,26 @@ impl Display {
         self.flipped as u8 
     }
 
+    fn index_from_coords(x: usize, y: usize) -> usize {
+        y * WIDTH + x
+    }
+
     pub fn draw_byte(&mut self, byte: u8, x: u8, y: u8) {
         self.flipped = false;
         let mut cx = x as usize;
         let cy = y as usize;
         let mut b = byte;
         for _ in 0 .. 8 {
+            let index = cy * WIDTH + cx;
             match (b & 0b1000_0000) >> 7 {
                 0 => {
-                    if self.screen[cy][cx] == 1 {
+                    if self.screen[index] == 1 {
                         self.flipped = true
                     }
-                    self.screen[cy][cx] = 0 
+                    self.screen[index] = 0 
                 },
                 1 => {
-                    self.screen[cy][cx] = 1
+                    self.screen[index] = 1
                 },
                 _ => unreachable!(),
             };
@@ -45,19 +50,23 @@ impl Display {
     }
 
     pub fn show_pixels(&self) {
-        for y in 0 .. HEIGHT {
-            for x in 0 .. WIDTH {
-                if self.screen[y][x] == 0 {
-                    print!("░");
-                } else {
-                    print!("{}", "█".red());
-                }
-            }
-            print!("\n");
+        for index in 0..self.screen.len() {
+            let pixel = self.screen[index];
+            if index % WIDTH == 0 { print!("\n"); }
+            match pixel {
+                0 => print!("░"),
+                1 => print!("{}", "█".red()),
+                _ => unreachable!()
+            };
         }
+        print!("\n");
     }
 
     pub fn clear_diplay(&mut self) {
-        self.screen = [[0; WIDTH]; HEIGHT];
+        self.screen = [0; WIDTH * HEIGHT];
+    }
+
+    pub fn get_buffer(&self) -> &[u8] {
+        todo!()
     }
 }

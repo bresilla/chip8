@@ -28,4 +28,8 @@ impl Chip8 {
         self.cpu.execute(&mut self.bus);
         info!("\n");
     }
+
+    pub fn chip_display_buffer(&self) -> &[u8] {
+        self.bus.disp_get_buffer()
+    }
 }

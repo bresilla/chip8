@@ -45,6 +45,10 @@ impl Bus {
         self.display.flipped_bit()
     }
 
+    pub fn disp_get_buffer(&self) -> &[u8] {
+        self.display.get_buffer()
+    }
+
     pub fn timer_set_delay(&mut self, value: u8) {
         self.timer.set_delay(value)
     }

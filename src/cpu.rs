@@ -225,10 +225,18 @@ impl Cpu {
                 }
             }
             0xF => {
-                let new_i = self.read_reg(x) as u16;
-                self.i = new_i;
-                info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
-                self.increment_pc(2);
+                match instruction & 0x00FF {
+                    0x1E => {
+                        let new_i = self.read_reg(x) as u16;
+                        self.i = new_i;
+                        info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
+                        self.increment_pc(2);
+                    }
+                    _ => {
+                        info!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                        unreachable!()
+                    }
+                }
             }
             _ => {
                 info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);

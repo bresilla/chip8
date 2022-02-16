@@ -25,22 +25,8 @@ impl Cpu {
         }
     }
 
-    pub fn increment_pc(&mut self, jumps: u16) { self.pc += jumps }
-    pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
-    pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
-
-    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, n: u8) {
-        for y in 0 .. n {
-            let b = bus.ram_read_byte(self.i + y as u16);
-            bus.disp_draw_byte(b, x, y);
-        }
-        bus.disp_show_pixels();
-        self.write_reg(0xF, bus.disp_flipped_bit());
-    }
-
     pub fn execute(&mut self, bus: &mut Bus) {
         if bus.timer_get_delay() != 0 { return }
-
         let hi = bus.ram_read_byte(self.pc) as u16;
         let lo = bus.ram_read_byte(self.pc + 1) as u16;
         let instruction: u16 = (hi << 8) | lo;
@@ -51,9 +37,9 @@ impl Cpu {
         let n = (instruction & 0x00F) as u8;
         let x = ((instruction & 0x0F00) >> 8) as u8;
         let y = ((instruction & 0x00F0) >> 4) as u8;
- 
+
         info!("--> Values: nnn={:#X}, nn={:#X}, n={:?}, x={:#X}, y={:#X}", nnn, nn, n, x, y);
-        if self.lc == self.pc { panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) }
+        if self.pc == self.lc { panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) }
         self.lc = self.pc;
 
         match (instruction & 0xF000) >> 12 {
@@ -70,8 +56,7 @@ impl Cpu {
                         info!("{} --> return from subrutine", " FLOW ".black().on_truecolor(0, 255, 136));
                     }
                     _ => {
-                        info!("{} --> 0x0: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
-                        unreachable!()
+                        panic!("{} --> 0x0: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                     }
                 }
             }
@@ -177,8 +162,7 @@ impl Cpu {
                         info!("{} --> set vx:{:#X} <<= vy:{:#X}", " BITOP ".black().on_truecolor(201, 240, 236), vx, vy);
                     }
                     _ => {
-                        info!("{} --> 0x8: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
-                        unreachable!()
+                        panic!("{} --> 0x8: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                     }
                 }
                 self.increment_pc(2);
@@ -216,31 +200,29 @@ impl Cpu {
                 self.increment_pc(2);
             }
             0xE => {
-                match nn {
+                match instruction & 0x00FF {
                     0xA1 => {
-                        // if(key()!=Vx) then skip the next instruction
+                        //if (key() != Vx) skip next
                         let key = self.read_reg(x);
                         if !bus.key_is_pressed(key) {
-                            self.pc += 4;
-                        } else {
-                            self.pc += 2;
+                            info!("{} --> key {} is not pressed", " KEYOP ".black().on_truecolor(169, 105, 231), x);
+                            self.increment_pc(2);
                         }
+                        self.increment_pc(2);
                     }
                     0x9E => {
-                        // if(key()==Vx) then skip the next instruction
+                        //if (key() == Vx) skip next
                         let key = self.read_reg(x);
                         if bus.key_is_pressed(key) {
-                            self.pc += 4;
-                        } else {
-                            self.pc += 2;
+                            info!("{} --> key {} is not pressed", " KEYOP ".black().on_truecolor(169, 105, 231), x);
+                            self.increment_pc(2);
                         }
+                        self.increment_pc(2);
                     }
-                    _ => panic!(
-                        "Unrecognized 0xEX** instruction {:#X}:{:#X}",
-                        self.pc,
-                        instruction
-                    ),
-                };
+                    _ => {
+                        panic!("{} --> 0xE: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
+                    }
+                }
             }
             0xF => {
                 match instruction & 0x00FF {
@@ -255,31 +237,40 @@ impl Cpu {
                         self.increment_pc(2);
                     }
                     0x1E => {
-                        //I +=Vx
-                        let vx = self.read_reg(x);
-                        self.i += vx as u16;
-                        info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, vx);
+                        let new_i = self.read_reg(x) as u16;
+                        self.i += new_i;
+                        info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
                         self.increment_pc(2);
-                    },
+                    }
                     0x65 => {
                         //reg_load(Vx, &I)
                         for index in 0 .. x + 1 {
                             let value = bus.ram_read_byte(self.i + index as u16);
                             self.write_reg(index, value);
                         }
-                        self.increment_pc(2);
                     }
                     _ => {
-                        info!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
-                        unreachable!()
+                        panic!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                     }
                 }
             }
             _ => {
-                info!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
-                unreachable!()
+                panic!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
             }
         }
+    }
+
+    pub fn increment_pc(&mut self, jumps: u16) { self.pc += jumps }
+    pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
+    pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
+
+    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, n: u8) {
+        for y in 0 .. n {
+            let b = bus.ram_read_byte(self.i + y as u16);
+            bus.disp_draw_byte(b, x, y);
+        }
+        bus.disp_show_pixels();
+        self.write_reg(0xF, bus.disp_flipped_bit());
     }
 }
 

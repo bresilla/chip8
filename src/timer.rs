@@ -12,7 +12,7 @@ impl Timer {
         Timer { 
             clock: 0,
             delay: 0,
-            speed: 10,
+            speed: 1,
         }
     }
 

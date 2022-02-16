@@ -26,6 +26,10 @@ impl Cpu {
     }
 
     pub fn execute(&mut self, bus: &mut Bus) {
+        if bus.timer_get_delay() != 0 {
+            info!(" -------------------------------------------- DELAYED FOR {} CYCLES", bus.timer_get_delay());
+            return
+        }
         let hi = bus.ram_read_byte(self.pc) as u16;
         let lo = bus.ram_read_byte(self.pc + 1) as u16;
         let instruction: u16 = (hi << 8) | lo;

@@ -29,13 +29,14 @@ fn main() {
     let mut chip8 = Chip8::new();
     chip8.load_rom(&data);
 
-    let WIDTH = 640;
-    let HEIGHT = 320;
+    let scale = 20;
+    let width = display::WIDTH*scale;
+    let height = display::HEIGHT*scale;
 
-    let mut buffer: Vec<u32> = vec![0; WIDTH * HEIGHT];
+    let mut buffer: Vec<u32> = vec![0; width * height];
     for i in buffer.iter_mut() { *i = 0xffff0000; }
 
-    let mut window = Window::new("CHIP8", WIDTH, HEIGHT, WindowOptions::default())
+    let mut window = Window::new("CHIP8", width, height, WindowOptions::default())
         .unwrap_or_else(|e| { panic!("{}", e); });
 
     // Limit to max ~60 fps update rate
@@ -45,20 +46,20 @@ fn main() {
         chip8.run_instruction();
 
         let chip8_buffer = chip8.chip_display_buffer();
-        for y in 0..HEIGHT {
-            for x in 0..WIDTH {
-                let index = (y/10) * display::WIDTH + (x/10);
+        for y in 0..height {
+            for x in 0..width {
+                let index = (y/scale) * display::WIDTH + (x/scale);
                 let pixel = chip8_buffer[index];
                 let color_pixel = match pixel {
                     0 => 0x0,
                     1 => 0xffffff,
                     _ => unreachable!()
                 };
-                buffer[y * WIDTH + x] = color_pixel;
+                buffer[y * width + x] = color_pixel;
             }
         }
 
-        window.update_with_buffer(&buffer, WIDTH, HEIGHT).unwrap();
+        window.update_with_buffer(&buffer, width, height).unwrap();
     }
 
     // loop{ chip8.run_instruction() }

@@ -8,7 +8,7 @@ use std::fs::File;
 use std::io::Read;
 
 use log;
-use minifb::{Key, Window, WindowOptions};
+use minifb::{Key, KeyRepeat, Window, WindowOptions};
 
 mod ram;
 mod cpu;
@@ -54,7 +54,7 @@ fn main() {
     let mut chip8 = Chip8::new();
     chip8.load_rom(&data);
 
-    let scale = 25;
+    let scale = 10;
     let width = display::WIDTH*scale;
     let height = display::HEIGHT*scale;
 
@@ -64,10 +64,11 @@ fn main() {
     let mut window = Window::new("CHIP8", width, height, WindowOptions::default())
         .unwrap_or_else(|e| { panic!("{}", e); });
 
-    // Limit to max ~60 fps update rate
-    window.limit_update_rate(Some(std::time::Duration::from_micros(36600)));
-
     while window.is_open() && !window.is_key_down(Key::Escape) {
+        let keys_pressed = window.get_keys_pressed(KeyRepeat::No).iter().next().cloned();
+        let key = chip_keycode_of(keys_pressed);
+        chip8.chip_keycode_set(key);
+
         chip8.run_instruction();
 
         let chip8_buffer = chip8.chip_display_buffer();
@@ -86,6 +87,4 @@ fn main() {
 
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
-
-    loop{ chip8.run_instruction() }
 }

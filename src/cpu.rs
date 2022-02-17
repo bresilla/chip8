@@ -33,10 +33,20 @@ impl Cpu {
     pub fn unblock(&mut self) { self.block = false }
     pub fn block(&mut self) { self.block = true }
 
+    fn increment_pc_check(&mut self) {
+        if self.block == false {
+            if self.pc == self.lc {
+                panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) 
+            } else {
+                self.lc = self.pc;
+            }
+        }
+    }
+
     pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, n: u8) {
-        for y in 0 .. n {
-            let b = bus.ram_read_byte(self.i + y as u16);
-            bus.disp_draw_byte(b, x, y);
+        for r in 0 .. n {
+            let b = bus.ram_read_byte(self.i + r as u16);
+            bus.disp_draw_byte(b, x, r + y);
         }
         // bus.disp_show_pixels();
         self.write_reg(0xF, bus.disp_flipped_bit());
@@ -45,14 +55,6 @@ impl Cpu {
     pub fn execute(&mut self, bus: &mut Bus) {
         if bus.timer_get_delay() != 0 {
             return
-        }
-
-        if self.block == false {
-            if self.pc == self.lc {
-                panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) 
-            } else {
-                self.lc = self.pc;
-            }
         }
 
         let hi = bus.ram_read_byte(self.pc) as u16;

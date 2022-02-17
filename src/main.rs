@@ -20,6 +20,31 @@ mod timer;
 
 use chip8::Chip8;
 
+fn chip_keycode_of(key: Option<Key>) -> Option<u8> {
+    match key {
+        Some(Key::Key1) => Some(0x1),
+        Some(Key::Key2) => Some(0x2),
+        Some(Key::Key3) => Some(0x3),
+        Some(Key::Key4) => Some(0xC),
+
+        Some(Key::Q) => Some(0x4),
+        Some(Key::W) => Some(0x5),
+        Some(Key::E) => Some(0x6),
+        Some(Key::R) => Some(0xD),
+
+        Some(Key::A) => Some(0x7),
+        Some(Key::S) => Some(0x8),
+        Some(Key::D) => Some(0x9),
+        Some(Key::F) => Some(0xE),
+
+        Some(Key::Z) => Some(0xA),
+        Some(Key::X) => Some(0x0),
+        Some(Key::C) => Some(0xB),
+        Some(Key::V) => Some(0xF),
+        _ => None,
+    }
+}
+
 fn main() {
     env_logger::init();
     let mut file = File::open("games/INVADERS").unwrap();
@@ -40,7 +65,7 @@ fn main() {
         .unwrap_or_else(|e| { panic!("{}", e); });
 
     // Limit to max ~60 fps update rate
-    window.limit_update_rate(Some(std::time::Duration::from_micros(16600)));
+    window.limit_update_rate(Some(std::time::Duration::from_micros(36600)));
 
     while window.is_open() && !window.is_key_down(Key::Escape) {
         chip8.run_instruction();
@@ -62,5 +87,5 @@ fn main() {
         window.update_with_buffer(&buffer, width, height).unwrap();
     }
 
-    // loop{ chip8.run_instruction() }
+    loop{ chip8.run_instruction() }
 }

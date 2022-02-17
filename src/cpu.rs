@@ -12,6 +12,7 @@ pub struct Cpu {
     pc: u16,
     lc: u16,
     stack: Vec<u16>,
+    block: bool
 }
 
 impl Cpu {
@@ -22,11 +23,38 @@ impl Cpu {
             pc: PROGRAM_START,
             lc: 0,
             stack: Vec::<u16>::new(),
+            block: false
         }
     }
 
+    pub fn increment_pc(&mut self, jumps: u16) { self.pc += jumps }
+    pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
+    pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
+    pub fn unblock(&mut self) { self.block = false }
+    pub fn block(&mut self) { self.block = true }
+
+    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, n: u8) {
+        for y in 0 .. n {
+            let b = bus.ram_read_byte(self.i + y as u16);
+            bus.disp_draw_byte(b, x, y);
+        }
+        // bus.disp_show_pixels();
+        self.write_reg(0xF, bus.disp_flipped_bit());
+    }
+
     pub fn execute(&mut self, bus: &mut Bus) {
-        if bus.timer_get_delay() != 0 { return }
+        if bus.timer_get_delay() != 0 {
+            return
+        }
+
+        if self.block == false {
+            if self.pc == self.lc {
+                panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) 
+            } else {
+                self.lc = self.pc;
+            }
+        }
+
         let hi = bus.ram_read_byte(self.pc) as u16;
         let lo = bus.ram_read_byte(self.pc + 1) as u16;
         let instruction: u16 = (hi << 8) | lo;
@@ -37,10 +65,7 @@ impl Cpu {
         let n = (instruction & 0x00F) as u8;
         let x = ((instruction & 0x0F00) >> 8) as u8;
         let y = ((instruction & 0x00F0) >> 4) as u8;
-
         info!("--> Values: nnn={:#X}, nn={:#X}, n={:?}, x={:#X}, y={:#X}", nnn, nn, n, x, y);
-        if self.pc == self.lc { panic!("{}", format!("COUNTER NOT INCREMENTED").black().on_truecolor(0, 255, 136)) }
-        self.lc = self.pc;
 
         match (instruction & 0xF000) >> 12 {
             0x0 => {
@@ -249,6 +274,18 @@ impl Cpu {
                             self.write_reg(index, value);
                         }
                     }
+                    0x0A => {
+                        //Vx = get_key()
+                        if let Some(e) = bus.key_get_key() {
+                            self.write_reg(x, e);
+                            self.increment_pc(2);
+                            self.unblock();
+                            info!("{} --> key {} is pressed, and then stored in VX.", " KEYOP ".black().on_truecolor(169, 105, 231), e);
+                        } else {
+                            self.block();
+                            info!("{} --> no key is pressed, waiting for input", " KEYOP ".black().on_truecolor(169, 105, 231));
+                        }
+                    }
                     _ => {
                         panic!("{} --> 0xF: unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
                     }
@@ -258,19 +295,6 @@ impl Cpu {
                 panic!("{} --> unrecognized instruction: {:#X}\n", " ERROR ".black().on_truecolor(212, 60, 58), instruction);
             }
         }
-    }
-
-    pub fn increment_pc(&mut self, jumps: u16) { self.pc += jumps }
-    pub fn write_reg(&mut self, index: u8, value: u8) { self.v[index as usize] = value; }
-    pub fn read_reg(&mut self, index: u8) -> u8 { self.v[index as usize] }
-
-    pub fn debug_draw_sprite(&mut self, bus: &mut Bus, x: u8, y: u8, n: u8) {
-        for y in 0 .. n {
-            let b = bus.ram_read_byte(self.i + y as u16);
-            bus.disp_draw_byte(b, x, y);
-        }
-        // bus.disp_show_pixels();
-        self.write_reg(0xF, bus.disp_flipped_bit());
     }
 }
 

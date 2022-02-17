@@ -25,6 +25,12 @@ impl Bus {
     pub fn key_is_pressed(&self, keycode: u8) -> bool {
         self.keyboard.is_pressed(keycode)
     }
+    pub fn key_get_key(&self) -> Option<u8> {
+        self.keyboard.get_key()
+    }
+    pub fn key_set_key(&mut self, keycode: Option<u8>) {
+        self.keyboard.set_key(keycode)
+    }
     pub fn ram_write_byte(&mut self, address: u16, value: u8) {
         self.ram.write_byte(address, value);
     }

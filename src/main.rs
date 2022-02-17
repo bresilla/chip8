@@ -29,7 +29,7 @@ fn main() {
     let mut chip8 = Chip8::new();
     chip8.load_rom(&data);
 
-    let scale = 20;
+    let scale = 25;
     let width = display::WIDTH*scale;
     let height = display::HEIGHT*scale;
 

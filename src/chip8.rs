@@ -32,4 +32,7 @@ impl Chip8 {
     pub fn chip_display_buffer(&self) -> &[u8] {
         self.bus.disp_get_buffer()
     }
+    pub fn chip_keycode_set(&mut self, keycode: Option<u8>) {
+        self.bus.key_set_key(keycode)
+    }
 }

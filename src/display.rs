@@ -30,20 +30,15 @@ impl Display {
         let mut cx = x as usize;
         let cy = y as usize;
         let mut b = byte;
+
         for _ in 0 .. 8 {
             let index = cy * WIDTH + cx;
-            match (b & 0b1000_0000) >> 7 {
-                0 => {
-                    if self.screen[index] == 1 {
-                        self.flipped = true
-                    }
-                    self.screen[index] = 0 
-                },
-                1 => {
-                    self.screen[index] = 1
-                },
-                _ => unreachable!(),
-            };
+            let bit = (b & 0b1000_0000) >> 7;
+            let prev_value = self.screen[index];
+            self.screen[index] ^= bit;
+            if prev_value == 1 && self.screen[index] == 0 {
+                self.flipped = true;
+            }
             cx += 1;
             b = b << 1;
         }

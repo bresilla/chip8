@@ -47,7 +47,7 @@ fn chip_keycode_of(key: Option<Key>) -> Option<u8> {
 
 fn main() {
     env_logger::init();
-    let mut file = File::open("games/INVADERS").unwrap();
+    let mut file = File::open("games/BRIX").unwrap();
     let mut data = Vec::<u8>::new();
     file.read_to_end(&mut data);
 

@@ -269,6 +269,9 @@ impl Cpu {
                         info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
                         self.increment_pc(2);
                     }
+                    0x18 => {
+                        self.increment_pc(2);
+                    }
                     0x65 => {
                         //reg_load(Vx, &I)
                         for index in 0 .. x + 1 {

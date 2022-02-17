@@ -278,6 +278,7 @@ impl Cpu {
                             let value = bus.ram_read_byte(self.i + index as u16);
                             self.write_reg(index, value);
                         }
+                        self.increment_pc(2);
                     }
                     0x33 => {
                         let vx = self.read_reg(x);

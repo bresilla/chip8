@@ -263,13 +263,37 @@ impl Cpu {
                         info!("{} --> set delay timer to VX: {}", " TIMER ".black().on_truecolor(244, 216, 198), self.read_reg(x));
                         self.increment_pc(2);
                     }
+                    0x18 => {
+                        //sound
+                        self.increment_pc(2);
+                    }
                     0x1E => {
+                        //I +=Vx
                         let new_i = self.read_reg(x) as u16;
                         self.i += new_i;
                         info!("{} --> set i: {} to i+=Vx: {:#X}", " MEM ".black().on_truecolor(169, 105, 231), x, new_i);
                         self.increment_pc(2);
                     }
-                    0x18 => {
+                    0x29 => {
+                        //i == sprite address for character in Vx
+                        //Multiply by 5 because each sprite has 5 lines, each line
+                        //is 1 byte.
+                        self.i = self.read_reg(x) as u16 * 5;
+                        self.increment_pc(2);
+                    }
+                    0x33 => {
+                        let vx = self.read_reg(x);
+                        bus.ram_write_byte(self.i, vx / 100);
+                        bus.ram_write_byte(self.i + 1, (vx % 100) / 10);
+                        bus.ram_write_byte(self.i + 2, vx % 10);
+                        self.increment_pc(2);
+                    }
+                    0x55 => {
+                        for index in 0..x + 1 {
+                            let value = self.read_reg(index);
+                            bus.ram_write_byte(self.i + index as u16, value);
+                        }
+                        self.i += x as u16 + 1;
                         self.increment_pc(2);
                     }
                     0x65 => {
@@ -278,13 +302,6 @@ impl Cpu {
                             let value = bus.ram_read_byte(self.i + index as u16);
                             self.write_reg(index, value);
                         }
-                        self.increment_pc(2);
-                    }
-                    0x33 => {
-                        let vx = self.read_reg(x);
-                        bus.ram_write_byte(self.i, vx / 100);
-                        bus.ram_write_byte(self.i + 1, (vx % 100) / 10);
-                        bus.ram_write_byte(self.i + 2, vx % 10);
                         self.increment_pc(2);
                     }
                     0x0A => {

@@ -279,6 +279,13 @@ impl Cpu {
                             self.write_reg(index, value);
                         }
                     }
+                    0x33 => {
+                        let vx = self.read_reg(x);
+                        bus.ram_write_byte(self.i, vx / 100);
+                        bus.ram_write_byte(self.i + 1, (vx % 100) / 10);
+                        bus.ram_write_byte(self.i + 2, vx % 10);
+                        self.increment_pc(2);
+                    }
                     0x0A => {
                         //Vx = get_key()
                         if let Some(e) = bus.key_get_key() {
